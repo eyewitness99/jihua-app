@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FFF9FC">
+<title>码字星球 ✏️</title>
+<style>
+html{ -webkit-text-size-adjust:100%; }
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root{ --ink:#4A3F55; --ink-soft:#9A8FA8; --line:#F0EBF5; }
+
+body{
+  margin:0; min-height:100vh;
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  color:var(--ink); overflow-x:hidden;
+  background:
+    radial-gradient(circle at 8% -5%, #FFE0F0 0%, transparent 45%),
+    radial-gradient(circle at 95% 5%, #DFF0FF 0%, transparent 40%),
+    radial-gradient(circle at 50% 105%, #FFF6DC 0%, transparent 55%),
+    #FFF9FC;
+  background-attachment:fixed; overscroll-behavior-y:none;
+}
+button,input{ font-family:inherit; }
+button{ border:none; background:none; cursor:pointer; color:inherit; }
+
+.app{ max-width:520px; margin:0 auto; padding:22px 16px 120px; }
+
+/* ===== 顶部 ===== */
+.hero{ margin-bottom:18px; }
+.hero-date{
+  display:inline-block; font-size:12px; font-weight:700; letter-spacing:.5px;
+  color:#C08FC0; background:#fff; padding:5px 13px; border-radius:99px;
+  box-shadow:0 3px 10px rgba(200,150,220,.14); margin-bottom:10px;
+}
+.hero h1{
+  margin:0 0 4px; font-size:30px; font-weight:900; letter-spacing:-1px;
+  background:linear-gradient(100deg,#FF7EB6 0%,#B18CFF 50%,#5EC8FF 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero-sub{ margin:0; font-size:13px; color:var(--ink-soft); font-weight:500; }
+
+/* ===== 摘要 ===== */
+.summary{
+  display:flex; align-items:center; gap:14px; background:#fff; border-radius:26px;
+  padding:16px 18px; margin-bottom:16px; border:2px solid #fff;
+  box-shadow:0 10px 30px rgba(230,150,200,.16),0 2px 6px rgba(0,0,0,.03);
+}
+.mascot{
+  font-size:42px; line-height:1; flex-shrink:0; padding:0;
+  animation:floaty 3.2s ease-in-out infinite;
+  filter:drop-shadow(0 4px 8px rgba(255,150,200,.3));
+}
+@keyframes floaty{ 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-7px) rotate(2deg);} }
+.mascot.jump{ animation:mascotJump .62s cubic-bezier(.28,.84,.42,1); }
+@keyframes mascotJump{
+  0%{transform:scale(1) rotate(0);} 30%{transform:scale(1.4) rotate(-14deg);}
+  60%{transform:scale(.88) rotate(9deg);} 100%{transform:scale(1) rotate(0);}
+}
+.summary-body{ flex:1; min-width:0; }
+.summary-line{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; }
+.summary-label{ font-size:13px; font-weight:700; color:var(--ink-soft); }
+.summary-count{ font-size:14px; font-weight:900; color:#FF7EB6; }
+.bar{ height:10px; background:#F3EEF8; border-radius:99px; overflow:hidden; position:relative; }
+.bar i{
+  display:block; height:100%; width:0; border-radius:99px;
+  transition:width .5s cubic-bezier(.34,1.4,.64,1); position:relative; overflow:hidden;
+}
+.summary-bar i{ background:linear-gradient(90deg,#FFA8CE,#C9A6FF,#8FD3FF); }
+.bar i::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:translateX(-100%); animation:shimmer 2.4s ease-in-out infinite;
+}
+@keyframes shimmer{ 0%{transform:translateX(-100%);} 60%{transform:translateX(100%);} 100%{transform:translateX(100%);} }
+.summary-hint{ margin-top:8px; font-size:12px; color:var(--ink-soft); font-weight:600; }
+
+/* ===== 筛选栏 ===== */
+.filter-bar{
+  display:flex; gap:7px; overflow-x:auto; padding:2px 16px 14px; margin:0 -16px;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.filter-bar::-webkit-scrollbar{ display:none; }
+.filter-chip{
+  flex-shrink:0; padding:8px 15px; border-radius:99px; background:#fff;
+  font-size:12.5px; font-weight:800; color:#8A7A9A; border:2px solid #F0EBF5;
+  transition:all .2s; white-space:nowrap;
+}
+.filter-chip.on{
+  background:linear-gradient(100deg,#FF9EC4,#C9A6FF); color:#fff;
+  border-color:transparent; box-shadow:0 4px 12px rgba(255,150,200,.32);
+}
+.filter-chip:active{ transform:scale(.94); }
+.filter-chip .cnt{ font-size:10.5px; opacity:.75; margin-left:3px; }
+
+/* ===== 书本卡片 ===== */
+.book-list{ display:block; }
+.book-card{
+  position:relative; background:#fff; border-radius:24px;
+  padding:16px 16px 14px 20px; margin-bottom:14px; border:2px solid #fff;
+  box-shadow:0 6px 18px rgba(180,150,200,.10),0 1px 3px rgba(0,0,0,.02);
+  transition:background .3s,border-color .3s,box-shadow .3s,transform .3s; overflow:hidden;
+}
+.book-card::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:6px;
+  background:var(--c); opacity:.45; transition:opacity .3s;
+}
+.book-card.done{
+  background:linear-gradient(150deg,#ffffff 25%,var(--c-soft));
+  border-color:var(--c); box-shadow:0 12px 28px var(--c-mid);
+}
+.book-card.done::before{ opacity:1; }
+.book-card.pop{ animation:cardPop .55s cubic-bezier(.34,1.56,.64,1); }
+.book-card.removing{ animation:cardOut .38s cubic-bezier(.5,0,.75,0) forwards; }
+@keyframes cardOut{ to{ opacity:0; transform:scale(.88) translateX(40px); margin-bottom:-60px; } }
+@keyframes cardPop{ 0%{transform:scale(1);} 40%{transform:scale(1.035);} 100%{transform:scale(1);} }
+
+.book-head{ display:flex; align-items:center; gap:12px; }
+.book-emoji{
+  width:48px; height:48px; flex-shrink:0; display:grid; place-items:center;
+  font-size:24px; border-radius:16px; background:var(--c-soft); transition:transform .3s;
+}
+.book-card.done .book-emoji{ transform:rotate(-8deg) scale(1.06); }
+.book-meta{ flex:1; min-width:0; }
+.book-title{
+  margin:0 0 3px; font-size:16px; font-weight:800; letter-spacing:-.2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+  display:inline-block; max-width:100%; transition:color .18s,transform .18s;
+  padding:2px 6px; margin-left:-6px; border-radius:8px; line-height:1.3;
+}
+.book-title:active{ color:#FF7EB6; background:#FFF0F7; transform:scale(.97); }
+.book-title .pen{ font-size:12px; opacity:.55; margin-left:4px; font-weight:600; vertical-align:middle; }
+.book-title .cat-tag{
+  display:inline-block; font-size:10px; font-weight:800; padding:2px 7px;
+  border-radius:7px; background:var(--c-soft); color:var(--c);
+  margin-left:6px; vertical-align:middle; letter-spacing:0;
+}
+.book-title .status-tag{
+  display:inline-block; font-size:10px; font-weight:800; padding:2px 7px;
+  border-radius:7px; background:#F3EEF8; color:#8A7A9A;
+  margin-left:6px; vertical-align:middle;
+}
+.book-title .status-tag.writing{ background:#FFF0E6; color:#FF7A45; }
+.book-title .status-tag.done{ background:#E6F7EE; color:#2DA66A; }
+.book-goal{ font-size:11.5px; color:var(--ink-soft); font-weight:600; }
+.book-goal b{ color:var(--c); font-weight:900; }
+
+.check-btn{
+  width:48px; height:48px; flex-shrink:0; border-radius:50%;
+  border:2.5px dashed var(--c-mid); background:var(--c-soft);
+  display:grid; place-items:center;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1); padding:0;
+}
+.check-btn svg{
+  width:22px; height:22px; stroke:var(--c); stroke-width:3.2; fill:none;
+  stroke-linecap:round; stroke-linejoin:round; opacity:.35; transition:all .3s;
+}
+.book-card.done .check-btn{
+  background:var(--c); border-style:solid; border-color:var(--c);
+  box-shadow:0 6px 16px var(--c-mid); transform:scale(1.04);
+}
+.book-card.done .check-btn svg{ stroke:#fff; opacity:1; }
+.check-btn:active{ transform:scale(.9); }
+
+.book-progress{ display:flex; align-items:center; gap:10px; margin:13px 0 0; }
+.book-progress .bar{ flex:1; height:8px; }
+.book-progress .bar i{ background:linear-gradient(90deg,var(--c),var(--c-mid)); }
+.pct{ font-size:11px; font-weight:800; color:var(--ink-soft); flex-shrink:0; font-variant-numeric:tabular-nums; }
+.book-card.done .pct{ color:var(--c); }
+
+.ach-row{ display:flex; gap:5px; margin:10px 0 0; flex-wrap:wrap; }
+.ach-pill{
+  font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:99px;
+  background:linear-gradient(100deg,#FFF9E6,#FFEAF4); color:#C88A00;
+  border:1px solid #FFE4B0; white-space:nowrap;
+}
+
+.book-foot{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; margin-top:12px; flex-wrap:wrap;
+}
+.stepper{
+  display:flex; align-items:center; gap:3px; background:#F7F4FA;
+  border-radius:15px; padding:3px; flex:1; min-width:120px;
+}
+.stepper button{
+  width:34px; height:34px; flex-shrink:0; border-radius:12px; background:#fff;
+  color:#8A7A9A; font-size:19px; font-weight:800; display:grid; place-items:center;
+  box-shadow:0 1px 3px rgba(120,90,150,.10); transition:transform .12s,background .15s;
+  padding:0; line-height:1;
+}
+.stepper button:active{ transform:scale(.88); background:var(--c-soft); color:var(--c); }
+.word-input{
+  flex:1; min-width:0; border:none; background:transparent; text-align:center;
+  font-size:14.5px; font-weight:800; color:var(--ink); outline:none; padding:0 2px;
+  font-variant-numeric:tabular-nums;
+}
+.word-input::placeholder{ color:#C6BBD2; font-weight:600; }
+.word-input::-webkit-outer-spin-button,.word-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.word-input[type=number]{ -moz-appearance:textfield; }
+
+.foot-right{
+  display:flex; align-items:center; gap:5px; flex-shrink:0; flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.streak{
+  font-size:12px; font-weight:800; color:#C6BBD2; background:#F7F4FA;
+  padding:7px 9px; border-radius:11px; white-space:nowrap;
+  transition:all .3s; line-height:1;
+}
+.streak.on{ color:#FF7A45; background:#FFF0E6; box-shadow:0 2px 8px rgba(255,150,80,.2); }
+.edit-btn{
+  height:34px; padding:0 11px; border-radius:11px; font-size:12.5px; font-weight:800;
+  color:#8A7A9A; background:#F3EEF8; display:inline-flex; align-items:center;
+  gap:4px; white-space:nowrap; transition:all .18s; line-height:1; flex-shrink:0;
+}
+.edit-btn .pen{ font-size:13px; line-height:1; }
+.edit-btn:active{ background:#FFEAF4; color:#FF7EB6; transform:scale(.93); }
+.del-btn{
+  width:34px; height:34px; border-radius:11px; font-size:15px; color:#C6BBD2;
+  background:#F3EEF8; display:grid; place-items:center; transition:all .18s;
+  flex-shrink:0; padding:0; line-height:1;
+}
+.del-btn:active{ background:#FFE5E5; color:#FF5C5C; transform:scale(.9); }
+.complete-btn{
+  height:34px; padding:0 11px; border-radius:11px; font-size:12.5px; font-weight:800;
+  color:#2DA66A; background:#E6F7EE; display:inline-flex; align-items:center;
+  gap:3px; white-space:nowrap; transition:all .18s; line-height:1; flex-shrink:0;
+}
+.complete-btn:active{ background:#D0EEDC; transform:scale(.93); }
+
+/* ===== 空状态 ===== */
+.empty{ text-align:center; padding:46px 20px; color:var(--ink-soft); }
+.empty-emoji{ font-size:52px; margin-bottom:14px; animation:floaty 3s ease-in-out infinite; }
+.empty p{ margin:0; font-size:13.5px; line-height:1.8; font-weight:600; }
+
+/* ===== 按钮 ===== */
+.add-btn{
+  width:100%; padding:18px; margin-top:4px; border-radius:22px;
+  border:2.5px dashed #FFC2DC; background:rgba(255,255,255,.75);
+  color:#FF86B5; font-size:15px; font-weight:800; transition:all .2s;
+}
+.add-btn:active{ transform:scale(.97); background:#FFF0F7; border-color:#FF9EC4; }
+.inspire-btn{
+  width:100%; padding:15px; margin-top:10px; border-radius:20px;
+  background:linear-gradient(100deg,#FFF6DC,#FFEAF4,#EAF4FF);
+  color:#C08FC0; font-size:14px; font-weight:800; transition:all .2s;
+  border:2px dashed #FFD0E4;
+}
+.inspire-btn:active{ transform:scale(.97); background:#FFF0F7; }
+.inspire-box{
+  max-height:0; overflow:hidden; opacity:0;
+  background:linear-gradient(135deg,#FFF0F7,#F0F7FF); border-radius:20px;
+  border:2px dashed #C9A6FF;
+  transition:all .4s cubic-bezier(.34,1.4,.64,1);
+  margin-top:0; padding:0 20px; text-align:center;
+}
+.inspire-box.show{ max-height:240px; padding:20px; margin-top:12px; opacity:1; }
+.inspire-box p{ margin:0 0 10px; font-size:14.5px; font-weight:700; line-height:1.7; color:#6A5A7A; }
+.inspire-box small{ font-size:11px; color:#B9AEC6; font-weight:700; }
+
+/* ===== 统计 ===== */
+.stat-card{
+  background:#fff; border-radius:24px; padding:18px; margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(180,150,200,.10); border:2px solid #fff;
+}
+.stat-card.total-card{ background:linear-gradient(135deg,#FFF0F7,#F0F7FF); border-color:#FFE0EE; }
+.stat-head{ display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.stat-emoji{
+  width:38px; height:38px; display:grid; place-items:center; font-size:19px;
+  border-radius:13px; background:var(--c-soft,#F3EEF8);
+}
+.stat-head h3{ margin:0; font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.stat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.stat-item{ text-align:center; background:#FAF7FD; border-radius:15px; padding:11px 4px; }
+.stat-card.total-card .stat-item{ background:rgba(255,255,255,.7); }
+.stat-item b{
+  display:block; font-size:18px; font-weight:900; color:var(--c,#FF7EB6);
+  font-variant-numeric:tabular-nums; margin-bottom:3px;
+}
+.stat-item span{ font-size:10.5px; color:var(--ink-soft); font-weight:700; }
+.dot-row{ display:flex; gap:5px; flex-wrap:nowrap; }
+.dot{ flex:1; height:22px; border-radius:7px; background:#F3EEF8; transition:background .3s; }
+.dot.on{ box-shadow:0 2px 6px rgba(0,0,0,.08); }
+.dot-label{ margin-top:7px; font-size:10.5px; color:var(--ink-soft); font-weight:700; text-align:right; }
+.ach-list{
+  display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; padding-top:12px;
+  border-top:1.5px dashed #F0EBF5;
+}
+.ach-badge{
+  display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:800;
+  padding:5px 10px; border-radius:99px; background:linear-gradient(100deg,#FFF9E6,#FFEAF4);
+  color:#C88A00; border:1px solid #FFE4B0;
+}
+
+/* ===== 日历 ===== */
+.calendar{
+  background:#fff; border-radius:24px; padding:18px; margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(180,150,200,.10); border:2px solid #fff;
+}
+.cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.cal-title{ font-size:16px; font-weight:900; }
+.cal-nav{
+  width:34px; height:34px; border-radius:12px; background:#F7F4FA;
+  display:grid; place-items:center; font-size:18px; font-weight:800;
+  color:#8A7A9A; padding:0; transition:all .18s;
+}
+.cal-nav:active{ transform:scale(.9); background:#FFEAF4; color:#FF7EB6; }
+.cal-week{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:6px; }
+.cal-wd{ text-align:center; font-size:11px; font-weight:800; color:var(--ink-soft); padding:6px 0; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-cell{
+  aspect-ratio:1; border-radius:12px; background:transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; font-size:13px; font-weight:700; color:var(--ink);
+  padding:0; transition:background .18s;
+}
+.cal-cell.empty{ visibility:hidden; }
+.cal-cell.today{ background:#FFF0F7; color:#FF7EB6; font-weight:900; box-shadow:0 0 0 2px #FFB7D5 inset; }
+.cal-cell.has-done{ background:#F8F4FF; }
+.cal-cell.has-done .cal-day{ color:#8A7ACD; font-weight:900; }
+.cal-dots{ display:flex; gap:2px; margin-top:2px; position:absolute; bottom:4px; }
+.cal-dots i{ width:5px; height:5px; border-radius:50%; display:block; }
+.cal-cell:active{ transform:scale(.92); }
+
+.day-detail{
+  background:#fff; border-radius:24px; padding:18px; margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(180,150,200,.10); border:2px solid #fff;
+  min-height:100px;
+}
+.day-detail h3{ margin:0 0 12px; font-size:14px; font-weight:800; color:var(--ink); }
+.day-detail-list{ display:flex; flex-direction:column; gap:8px; }
+.day-item{
+  display:flex; align-items:center; gap:10px; padding:9px 12px;
+  border-radius:14px; background:#FBF9FE; font-size:13px; font-weight:700;
+}
+.day-item-emoji{ font-size:18px; }
+.day-empty{ font-size:12.5px; color:var(--ink-soft); font-weight:600; text-align:center; padding:20px 0; }
+
+/* ===== 底部标签栏 ===== */
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:center;
+  gap:4px; padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-top:1px solid rgba(255,190,220,.35); z-index:60;
+}
+.tab{
+  flex:1; max-width:120px; display:flex; flex-direction:column; align-items:center;
+  gap:2px; padding:7px 0; border-radius:16px; font-size:10.5px;
+  font-weight:800; color:#B9AEC6; transition:all .22s;
+}
+.tab span{ font-size:19px; line-height:1; transition:transform .25s; }
+.tab.on{ color:#FF7EB6; background:linear-gradient(180deg,#FFF0F7,transparent); }
+.tab.on span{ transform:scale(1.16) translateY(-1px); }
+.tab:active span{ transform:scale(.9); }
+
+/* ===== 弹层 ===== */
+.sheet-mask{
+  position:fixed; inset:0; background:rgba(70,50,80,.35);
+  backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  opacity:0; pointer-events:none; transition:opacity .3s; z-index:100;
+}
+.sheet-mask.show{ opacity:1; pointer-events:auto; }
+.sheet{
+  position:fixed; left:0; right:0; bottom:0; margin:0 auto; max-width:520px;
+  background:#fff; border-radius:30px 30px 0 0;
+  padding:12px 20px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(105%); transition:transform .4s cubic-bezier(.32,.72,0,1);
+  z-index:101; max-height:88vh; overflow-y:auto;
+  box-shadow:0 -12px 44px rgba(120,90,140,.22); -webkit-overflow-scrolling:touch;
+}
+.sheet.show{ transform:translateY(0); }
+.sheet .handle{ width:44px; height:5px; border-radius:99px; background:#EDE6F3; margin:0 auto 16px; }
+.sheet h2{ margin:0 0 18px; font-size:19px; font-weight:900; letter-spacing:-.3px; }
+.field{ margin-bottom:18px; }
+.field > label{ display:block; font-size:12.5px; font-weight:800; color:var(--ink-soft); margin-bottom:8px; }
+.field input[type=text],.field input[type=number],.field textarea{
+  width:100%; padding:13px 15px; border-radius:15px; border:2px solid #F0EBF5;
+  background:#FBF9FE; font-size:15px; font-weight:700; color:var(--ink);
+  outline:none; transition:border-color .2s,background .2s; -webkit-appearance:none;
+}
+.field textarea{ min-height:80px; resize:vertical; line-height:1.5; font-weight:600; }
+.field input:focus,.field textarea:focus{ border-color:#FFC2DC; background:#fff; }
+.field input::placeholder,.field textarea::placeholder{ color:#C6BBD2; font-weight:600; }
+.field input::-webkit-outer-spin-button,.field input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.goal-row{ display:flex; align-items:center; gap:10px; }
+.goal-row input{ flex:1; }
+.goal-row > span{ font-size:13px; font-weight:700; color:var(--ink-soft); white-space:nowrap; }
+.quick-goals{ display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+.quick-goals button{
+  padding:7px 13px; border-radius:99px; background:#F7F3FB; font-size:12px;
+  font-weight:800; color:#8A7A9A; transition:all .18s;
+}
+.quick-goals button:active{ transform:scale(.93); background:#FFEAF4; color:#FF7EB6; }
+.quick-goals button.sel{ background:#FFEAF4; color:#FF7EB6; box-shadow:0 0 0 2px #FFB7D5 inset; }
+.emoji-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:7px; }
+.emoji-opt{
+  aspect-ratio:1; border-radius:14px; font-size:21px; background:#F9F6FC;
+  display:grid; place-items:center; transition:all .18s; padding:0;
+}
+.emoji-opt.sel{ background:#FFEAF4; box-shadow:0 0 0 2.5px #FFB7D5 inset; transform:scale(1.06); }
+.emoji-opt:active{ transform:scale(.9); }
+.color-row{ display:flex; gap:11px; flex-wrap:wrap; }
+.color-opt{
+  width:38px; height:38px; border-radius:50%; background:var(--cc);
+  transition:all .18s; position:relative; padding:0;
+}
+.color-opt.sel{ transform:scale(1.14); }
+.color-opt.sel::after{
+  content:'✓'; position:absolute; inset:0; display:grid; place-items:center;
+  color:#fff; font-size:16px; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,.18);
+}
+.color-opt:active{ transform:scale(.9); }
+.status-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.status-opt{
+  padding:9px 16px; border-radius:14px; background:#F7F3FB; font-size:13px;
+  font-weight:800; color:#8A7A9A; transition:all .18s;
+}
+.status-opt.sel{ background:linear-gradient(100deg,#FFEAF4,#F0E8FF); color:#B18CFF; box-shadow:0 0 0 2px #D0C0FF inset; }
+.status-opt:active{ transform:scale(.94); }
+.sheet-actions{ display:flex; gap:10px; margin-top:24px; }
+.btn-primary{
+  flex:1; padding:16px; border-radius:18px;
+  background:linear-gradient(100deg,#FF9EC4,#C9A6FF); color:#fff; font-size:15px; font-weight:900;
+  box-shadow:0 8px 20px rgba(255,150,200,.4); transition:transform .18s,box-shadow .18s;
+}
+.btn-primary:active{ transform:scale(.96); box-shadow:0 4px 12px rgba(255,150,200,.35); }
+.btn-ghost{
+  padding:16px 20px; border-radius:18px; background:#FFF0F3; color:#FF7B95;
+  font-size:14px; font-weight:800; transition:transform .18s;
+}
+.btn-ghost:active{ transform:scale(.94); }
+
+/* ===== 确认框 ===== */
+.confirm-mask{
+  position:fixed; inset:0; background:rgba(70,50,80,.4);
+  backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  opacity:0; pointer-events:none; transition:opacity .25s; z-index:200;
+}
+.confirm-mask.show{ opacity:1; pointer-events:auto; }
+.confirm-box{
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) scale(.92);
+  width:calc(100% - 60px); max-width:340px; background:#fff; border-radius:24px;
+  padding:24px 22px; text-align:center; box-shadow:0 20px 50px rgba(60,40,80,.3);
+  opacity:0; pointer-events:none; transition:all .3s cubic-bezier(.34,1.56,.64,1); z-index:201;
+}
+.confirm-box.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+.confirm-emoji{ font-size:42px; margin-bottom:8px; }
+.confirm-box h3{ margin:0 0 8px; font-size:17px; font-weight:900; }
+.confirm-box p{ margin:0 0 20px; font-size:13px; color:var(--ink-soft); font-weight:600; line-height:1.6; }
+.confirm-actions{ display:flex; gap:10px; }
+.confirm-cancel,.confirm-ok{ flex:1; padding:14px; border-radius:16px; font-size:14px; font-weight:800; transition:all .18s; }
+.confirm-cancel{ background:#F3EEF8; color:#8A7A9A; }
+.confirm-ok{
+  background:linear-gradient(100deg,#FF9EC4,#C9A6FF); color:#fff;
+  box-shadow:0 6px 16px rgba(255,150,200,.35);
+}
+.confirm-ok.danger{ background:linear-gradient(100deg,#FF7B95,#FF5C5C); box-shadow:0 6px 16px rgba(255,100,120,.35); }
+.confirm-cancel:active,.confirm-ok:active{ transform:scale(.95); }
+
+/* ===== Toast & 彩带 ===== */
+.toast{
+  position:fixed; left:50%; bottom:100px;
+  transform:translate(-50%,16px) scale(.95);
+  background:rgba(62,48,74,.94); color:#fff; padding:12px 22px; border-radius:99px;
+  font-size:13.5px; font-weight:700; opacity:0; pointer-events:none;
+  transition:all .32s cubic-bezier(.34,1.56,.64,1); z-index:300; max-width:88vw;
+  text-align:center; box-shadow:0 10px 30px rgba(60,40,80,.3);
+}
+.toast.show{ opacity:1; transform:translate(-50%,0) scale(1); }
+.confetti{
+  position:fixed; font-size:18px; line-height:1; pointer-events:none;
+  z-index:9999; will-change:transform,opacity;
+  animation:confettiFly 1.2s cubic-bezier(.2,.7,.4,1) forwards;
+}
+@keyframes confettiFly{
+  0%{ transform:translate(-50%,-50%) scale(.3); opacity:1; }
+  35%{ transform:translate(calc(-50% + var(--dx) * .75),calc(-50% + var(--dy))) scale(1.15); opacity:1; }
+  100%{ transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy) + 240px)) rotate(var(--rot)) scale(.75); opacity:0; }
+}
+@media (min-width:560px){ .sheet{ border-radius:30px; bottom:22px; } }
+@media (prefers-reduced-motion:reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hero">
+    <div class="hero-date" id="heroDate">—</div>
+    <h1>码字星球</h1>
+    <p class="hero-sub">把每一个字，都变成闪亮的星星 ✨</p>
+  </header>
+
+  <main>
+    <!-- ============ 今日 ============ -->
+    <div id="viewToday">
+      <section class="summary">
+        <button class="mascot" id="mascot" aria-label="摸摸我">🐱</button>
+        <div class="summary-body">
+          <div class="summary-line">
+            <span class="summary-label">今日打卡</span>
+            <span class="summary-count" id="summaryCount">0 / 0</span>
+          </div>
+          <div class="bar summary-bar"><i id="summaryFill"></i></div>
+          <div class="summary-hint" id="summaryHint">今天从哪本书开始呢？</div>
+        </div>
+      </section>
+      <div class="filter-bar" id="filterBar" style="display:none"></div>
+      <div class="book-list" id="bookList"></div>
+      <button class="add-btn" id="addBtn">＋ 添加一本新书</button>
+      <button class="inspire-btn" id="inspireBtn">🎲 给我一个灵感</button>
+      <div class="inspire-box" id="inspireBox"></div>
+    </div>
+
+    <!-- ============ 短篇 ============ -->
+    <div id="viewShort" style="display:none">
+      <div class="filter-bar" id="shortFilterBar" style="display:none"></div>
+      <div class="book-list" id="shortList"></div>
+      <button class="add-btn" id="addShortBtn">＋ 新的短篇计划</button>
+    </div>
+
+    <!-- ============ 日历 ============ -->
+    <div id="viewCalendar" style="display:none">
+      <div class="calendar" id="calendar"></div>
+      <div class="day-detail" id="dayDetail"></div>
+    </div>
+
+    <!-- ============ 统计 ============ -->
+    <div id="viewStats" style="display:none"></div>
+  </main>
+</div>
+
+<nav class="tabbar">
+  <button class="tab on" data-tab="today"><span>📝</span>今日</button>
+  <button class="tab" data-tab="short"><span>✍️</span>短篇</button>
+  <button class="tab" data-tab="calendar"><span>📅</span>日历</button>
+  <button class="tab" data-tab="stats"><span>📊</span>统计</button>
+</nav>
+
+<!-- ============ 书籍编辑弹层 ============ -->
+<div class="sheet-mask" id="sheetMask"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true">
+  <div class="handle"></div>
+  <h2 id="sheetTitle">添加新书 📚</h2>
+  <div class="field">
+    <label>书名（点这里就能改哦）</label>
+    <input type="text" id="fTitle" placeholder="给我的新书起个名字…" maxlength="24">
+  </div>
+  <div class="field">
+    <label>分类 / 归纳（可选）</label>
+    <input type="text" id="fCategory" placeholder="如：小说、散文、灵感笔记…" maxlength="10">
+    <div class="quick-goals" id="quickCats" style="margin-top:10px"></div>
+  </div>
+  <div class="field">
+    <label>每日目标字数</label>
+    <div class="goal-row">
+      <input type="number" id="fGoal" value="2000" inputmode="numeric" min="1">
+      <span>字 / 天</span>
+    </div>
+    <div class="quick-goals" id="quickGoals">
+      <button data-goal="500">500</button>
+      <button data-goal="1000">1000</button>
+      <button data-goal="2000">2000</button>
+      <button data-goal="3000">3000</button>
+      <button data-goal="5000">5000</button>
+      <button data-goal="10000">10000</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>选个封面</label>
+    <div class="emoji-grid" id="fEmoji"></div>
+  </div>
+  <div class="field">
+    <label>选个颜色</label>
+    <div class="color-row" id="fColor"></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-ghost" id="sheetDelete" style="display:none">删除</button>
+    <button class="btn-primary" id="sheetSave">开始码字！</button>
+  </div>
+</div>
+
+<!-- ============ 短篇编辑弹层 ============ -->
+<div class="sheet-mask" id="shortSheetMask"></div>
+<div class="sheet" id="shortSheet" role="dialog" aria-modal="true">
+  <div class="handle"></div>
+  <h2 id="shortSheetTitle">新的短篇计划 ✍️</h2>
+  <div class="field">
+    <label>短篇标题</label>
+    <input type="text" id="sTitle" placeholder="给短篇起个名字…" maxlength="24">
+  </div>
+  <div class="field">
+    <label>一句话梗概（可选）</label>
+    <textarea id="sDesc" placeholder="这个故事讲的是…" maxlength="80"></textarea>
+  </div>
+  <div class="field">
+    <label>目标字数</label>
+    <div class="goal-row">
+      <input type="number" id="sTarget" value="3000" inputmode="numeric" min="100">
+      <span>字</span>
+    </div>
+    <div class="quick-goals" id="sQuickTargets">
+      <button data-t="1000">1000</button>
+      <button data-t="3000">3000</button>
+      <button data-t="5000">5000</button>
+      <button data-t="8000">8000</button>
+      <button data-t="10000">10000</button>
+      <button data-t="20000">20000</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>创作状态</label>
+    <div class="status-row" id="sStatusRow">
+      <button class="status-opt" data-st="idea">💡 构思中</button>
+      <button class="status-opt" data-st="writing">✍️ 写作中</button>
+      <button class="status-opt" data-st="done">✅ 已完成</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>选个封面</label>
+    <div class="emoji-grid" id="sEmoji"></div>
+  </div>
+  <div class="field">
+    <label>选个颜色</label>
+    <div class="color-row" id="sColor"></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-ghost" id="shortSheetDelete" style="display:none">删除</button>
+    <button class="btn-primary" id="shortSheetSave">保存</button>
+  </div>
+</div>
+
+<!-- ============ 确认框 ============ -->
+<div class="confirm-mask" id="confirmMask"></div>
+<div class="confirm-box" id="confirmBox">
+  <div class="confirm-emoji">⚠️</div>
+  <h3 id="confirmTitle">确定吗？</h3>
+  <p id="confirmText"></p>
+  <div class="confirm-actions">
+    <button class="confirm-cancel" id="confirmCancel">取消</button>
+    <button class="confirm-ok" id="confirmOk">确定</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============ 常量 ============ */
+  const KEY = 'word-planet-v1';
+  const EMOJIS = ['📕','📗','📘','📙','📓','📔','📒','📖','✒️','🖋️','🪶','🌸','🐱','🦊','🐰','🐼','🦄','🌙','⭐','🍀','🎈','🧸','🍰','🌈','🔥','💎','🎀'];
+  const S_EMOJIS = ['✍️','📝','💭','🎭','🌙','💧','🌸','⚡','🎨','🕯️','🎈','🍃','🦋','🔥','💎','🌊'];
+  const COLORS = ['#FF9EC4','#FFB067','#FFD93D','#7FD8BE','#6EDCD9','#8FBCFF','#C4A7FF','#FF8A80'];
+  const PETS = ['🐱','🐰','🦊','🐼','🐻','🦄','🐨','🐯'];
+  const DONE_TOASTS = ['完成啦！太棒了 🎉','又搞定一本，厉害！','码字小天才就是你 ✨','打卡成功，继续加油 💪','今天的你闪闪发光 🌟'];
+
+  const PROMPTS = [
+    '如果主角突然会飞了，故事会怎么发展？',
+    '写一个发生在雨天的告别场景。',
+    '一封来自十年后自己的信。',
+    '主角发现镜子里的自己会眨眼。',
+    '咖啡店里，两个陌生人交换了日记本。',
+    '写一个只有三句话的恐怖故事。',
+    '主角是个能听到植物说话的园丁。',
+    '描述一种只在下雪时出现的生物。',
+    '一个永远停留在凌晨三点的城市。',
+    '主角捡到一个会说话的硬币。',
+    '写一段没有对话的争吵。',
+    '主角是个失败的魔法师，专修生活小妙招。',
+    '写一个关于「忘记」的故事。',
+    '主角的猫突然开口说话，但只会吐槽。',
+    '一个被所有书遗忘的图书馆。',
+    '描写一场发生在图书馆里的追逐战。',
+    '主角每天醒来都会丢失一段记忆。',
+    '写一个关于「第九次尝试」的故事。',
+    '两个平行世界的自己交换了一天。',
+    '主角是专门给妖怪写情书的代笔。',
+    '写一段只用气味来描述的场景。',
+    '主角是个只在深夜营业的出租车司机。',
+    '一个能听见别人心声，却听不见自己的女孩。'
+  ];
+
+  /* ============ 工具 ============ */
+  const pad = n => String(n).padStart(2,'0');
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36);
+  function dk(d){ d = d || new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  const today = () => dk(new Date());
+  function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+  function vibrate(ms){ if (navigator.vibrate){ try{ navigator.vibrate(ms); }catch(e){} } }
+  function fmtWords(n){
+    if (n >= 100000000) return (n/100000000).toFixed(1)+'亿';
+    if (n >= 10000) return (n/10000).toFixed(1)+'万';
+    return String(n);
+  }
+  function $(id){ return document.getElementById(id); }
+
+  /* ============ 状态 ============ */
+  let state = loadState();
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if (raw){
+        const p = JSON.parse(raw);
+        if (p && Array.isArray(p.books)) {
+          if (!Array.isArray(p.shortStories)) p.shortStories = [];
+          return p;
+        }
+      }
+    }catch(e){}
+    return { books: [], shortStories: [], seeded: false };
+  }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  if (!state.seeded && state.books.length === 0){
+    state.books = [
+      { id: uid(), title: '我的第一本书', goal: 2000, emoji: '📕', color: '#FF9EC4', category: '小说', createdAt: today(), completed: false, log: {} },
+      { id: uid(), title: '灵感小本本',   goal: 500,  emoji: '📔', color: '#7FD8BE', category: '灵感', createdAt: today(), completed: false, log: {} }
+    ];
+    state.shortStories = [
+      { id: uid(), title: '雨天的告别', description: '一个关于再见的小故事', targetWords: 3000, currentWords: 0, status: 'idea', emoji: '🌙', color: '#8FBCFF', createdAt: today() }
+    ];
+    state.seeded = true;
+    save();
+  }
+
+  const getBook = id => state.books.find(b => b.id === id);
+  const getShort = id => state.shortStories.find(s => s.id === id);
+
+  function getLog(book, date){
+    date = date || today();
+    if (!book.log) book.log = {};
+    if (!book.log[date]) book.log[date] = { done: false, words: 0 };
+    return book.log[date];
+  }
+  function isDone(book, date){ return !!(book.log && book.log[date] && book.log[date].done); }
+  function streakOf(book){
+    let s = 0; const d = new Date();
+    if (!isDone(book, dk(d))) d.setDate(d.getDate() - 1);
+    while (isDone(book, dk(d))){ s++; d.setDate(d.getDate() - 1); if (s > 3650) break; }
+    return s;
+  }
+  function bookTotalWords(book){
+    const logs = book.log || {};
+    return Object.keys(logs).reduce((s,k) => s + ((logs[k] && logs[k].words) || 0), 0);
+  }
+  function bookDoneDays(book){
+    const logs = book.log || {};
+    return Object.keys(logs).filter(k => logs[k] && logs[k].done).length;
+  }
+
+  function getAchievements(book){
+    const list = [];
+    const dd = bookDoneDays(book);
+    const tw = bookTotalWords(book);
+    const st = streakOf(book);
+    if (dd >= 1) list.push({ emoji:'🌟', name:'启程', desc:'第一次打卡' });
+    if (dd >= 7) list.push({ emoji:'📚', name:'书虫', desc:'累计 7 天' });
+    if (dd >= 30) list.push({ emoji:'👑', name:'王者', desc:'累计 30 天' });
+    if (st >= 3) list.push({ emoji:'🔥', name:'小火苗', desc:'连续 3 天' });
+    if (st >= 7) list.push({ emoji:'💪', name:'坚持者', desc:'连续 7 天' });
+    if (st >= 30) list.push({ emoji:'🏔️', name:'登顶', desc:'连续 30 天' });
+    if (tw >= 10000) list.push({ emoji:'✍️', name:'万字户', desc:'累计 1 万字' });
+    if (tw >= 100000) list.push({ emoji:'🏆', name:'十万字', desc:'累计 10 万字' });
+    return list;
+  }
+
+  /* ============ 视图状态 ============ */
+  let currentTab = 'today';
+  let currentFilter = 'all';
+  let currentShortFilter = 'all';
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let selectedDate = today();
+  let editingId = null;
+  let editingShortId = null;
+  let tempEmoji = EMOJIS[0];
+  let tempColor = COLORS[0];
+  let tempStatus = 'idea';
+  let sTempEmoji = S_EMOJIS[0];
+  let sTempColor = COLORS[0];
+  let lastDay = today();
+
+  /* ============ 确认框 ============ */
+  function showConfirm(opts){
+    return new Promise(function(resolve){
+      const box = $('confirmBox');
+      box.querySelector('.confirm-emoji').textContent = opts.emoji || '⚠️';
+      $('confirmTitle').textContent = opts.title || '确定吗？';
+      $('confirmText').textContent = opts.text || '';
+      const okBtn = $('confirmOk');
+      okBtn.textContent = opts.okText || '确定';
+      okBtn.className = 'confirm-ok' + (opts.danger ? ' danger' : '');
+      $('confirmMask').classList.add('show');
+      box.classList.add('show');
+      const close = function(r){
+        $('confirmMask').classList.remove('show');
+        box.classList.remove('show');
+        okBtn.onclick = null;
+        $('confirmCancel').onclick = null;
+        $('confirmMask').onclick = null;
+        resolve(r);
+      };
+      okBtn.onclick = () => close(true);
+      $('confirmCancel').onclick = () => close(false);
+      $('confirmMask').onclick = () => close(false);
+    });
+  }
+
+  /* ============ 渲染：日期 ============ */
+  function renderDate(){
+    const d = new Date();
+    const w = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    $('heroDate').textContent = (d.getMonth()+1)+'月'+d.getDate()+'日 · '+w;
+  }
+
+  /* ============ 渲染：摘要 ============ */
+  function renderSummary(){
+    const t = today();
+    const active = state.books.filter(b => !b.completed);
+    const total = active.length;
+    const done = active.filter(b => isDone(b, t)).length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    $('summaryCount').textContent = done + ' / ' + total;
+    $('summaryFill').style.width = pct + '%';
+    let emoji = '🐱', hint = '还没有书哦，快去添加一本吧～';
+    if (total > 0){
+      if (done === 0){ emoji = '🌱'; hint = '今天从哪本书开始呢？'; }
+      else if (done < total){ emoji = '🚀'; hint = '已完成 '+done+' 本，继续冲呀！'; }
+      else { emoji = '🎉'; hint = '全部完成！你就是码字之神！'; }
+    }
+    $('mascot').textContent = emoji;
+    $('summaryHint').textContent = hint;
+  }
+
+  /* ============ 渲染：筛选栏 ============ */
+  function getAllCategories(){
+    const s = new Set();
+    state.books.forEach(b => { if (!b.completed && b.category) s.add(b.category); });
+    return Array.from(s);
+  }
+  function renderFilters(){
+    const cats = getAllCategories();
+    if (cats.length === 0){ $('filterBar').style.display = 'none'; currentFilter = 'all'; return; }
+    $('filterBar').style.display = '';
+    if (currentFilter !== 'all' && cats.indexOf(currentFilter) === -1) currentFilter = 'all';
+    const activeBooks = state.books.filter(b => !b.completed);
+    const cntOf = c => c === 'all' ? activeBooks.length : activeBooks.filter(b => b.category === c).length;
+    let html = '<button class="filter-chip' + (currentFilter === 'all' ? ' on' : '') + '" data-cat="all">全部<span class="cnt">' + cntOf('all') + '</span></button>';
+    cats.forEach(function(c){
+      html += '<button class="filter-chip' + (currentFilter === c ? ' on' : '') + '" data-cat="' + esc(c) + '">' + esc(c) + '<span class="cnt">' + cntOf(c) + '</span></button>';
+    });
+    $('filterBar').innerHTML = html;
+  }
+
+  /* ============ 渲染：书籍卡片 ============ */
+  function bookCardHTML(b){
+    const log = getLog(b);
+    const words = log.words || 0;
+    const done = !!log.done;
+    const pct = done ? 100 : Math.min(100, Math.round(words / b.goal * 100));
+    const streak = streakOf(b);
+    const achs = getAchievements(b);
+    const topAchs = achs.slice(-3);
+    const catTag = b.category ? '<span class="cat-tag">' + esc(b.category) + '</span>' : '';
+    const achHTML = topAchs.length
+      ? '<div class="ach-row">' + topAchs.map(a => '<span class="ach-pill" title="' + a.desc + '">' + a.emoji + ' ' + a.name + '</span>').join('') + '</div>'
+      : '';
+    return '' +
+      '<div class="book-card' + (done ? ' done' : '') + '" data-id="' + b.id + '" ' +
+           'style="--c:' + b.color + ';--c-soft:' + b.color + '22;--c-mid:' + b.color + '55">' +
+        '<div class="book-head">' +
+          '<div class="book-emoji">' + b.emoji + '</div>' +
+          '<div class="book-meta">' +
+            '<h3 class="book-title" data-act="edit">' + esc(b.title) + catTag + '<span class="pen">✎</span></h3>' +
+            '<div class="book-goal">每日目标 <b>' + b.goal + '</b> 字</div>' +
+          '</div>' +
+          '<button class="check-btn" data-act="toggle" aria-label="打卡">' +
+            '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="book-progress">' +
+          '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+          '<span class="pct">' + words + ' / ' + b.goal + '</span>' +
+        '</div>' +
+        achHTML +
+        '<div class="book-foot">' +
+          '<div class="stepper">' +
+            '<button data-act="minus" aria-label="减少">−</button>' +
+            '<input class="word-input" type="number" inputmode="numeric" value="' + (words || '') + '" placeholder="0" aria-label="今日字数">' +
+            '<button data-act="plus" aria-label="增加">＋</button>' +
+          '</div>' +
+          '<div class="foot-right">' +
+            '<span class="streak' + (streak > 0 ? ' on' : '') + '">🔥 ' + streak + '</span>' +
+            '<button class="complete-btn" data-act="complete" aria-label="完结">✓ 完结</button>' +
+            '<button class="edit-btn" data-act="edit" aria-label="改名"><span class="pen">✎</span>改名</button>' +
+            '<button class="del-btn" data-act="delete" aria-label="删除">🗑</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderBooks(){
+    const activeBooks = state.books.filter(b => !b.completed);
+    if (!state.books.length){
+      $('bookList').innerHTML = '<div class="empty"><div class="empty-emoji">📭</div><p>这里空空的～<br>添加你的第一本书，开始今天的码字之旅吧！</p></div>';
+      return;
+    }
+    const filtered = currentFilter === 'all' ? activeBooks : activeBooks.filter(b => b.category === currentFilter);
+    if (!filtered.length){
+      $('bookList').innerHTML = '<div class="empty"><div class="empty-emoji">🔍</div><p>' +
+        (activeBooks.length === 0 ? '所有书都完结啦～<br>去「统计」页面看看它们吧 📦' : '这个分类下还没有书～<br>换个分类看看吧') +
+        '</p></div>';
+      return;
+    }
+    $('bookList').innerHTML = filtered.map(bookCardHTML).join('');
+  }
+
+  function refreshCardProgress(card, book){
+    const log = getLog(book);
+    const words = log.words || 0;
+    const pct = log.done ? 100 : Math.min(100, Math.round(words / book.goal * 100));
+    const fill = card.querySelector('.bar i');
+    if (fill) fill.style.width = pct + '%';
+    const pctEl = card.querySelector('.pct');
+    if (pctEl) pctEl.textContent = words + ' / ' + book.goal;
+  }
+
+  /* ============ 渲染：短篇 ============ */
+  function shortStatusText(s){
+    return s === 'idea' ? '💡 构思中' : s === 'writing' ? '✍️ 写作中' : '✅ 已完成';
+  }
+  function shortCardHTML(s){
+    const pct = s.targetWords ? Math.min(100, Math.round((s.currentWords || 0) / s.targetWords * 100)) : 0;
+    const stTag = '<span class="status-tag ' + (s.status === 'writing' ? 'writing' : s.status === 'done' ? 'done' : '') + '">' + shortStatusText(s.status) + '</span>';
+    const descHTML = s.description ? '<div class="book-goal" style="margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.description) + '</div>' : '';
+    return '' +
+      '<div class="book-card' + (s.status === 'done' ? ' done' : '') + '" data-id="' + s.id + '" ' +
+           'style="--c:' + s.color + ';--c-soft:' + s.color + '22;--c-mid:' + s.color + '55">' +
+        '<div class="book-head">' +
+          '<div class="book-emoji">' + s.emoji + '</div>' +
+          '<div class="book-meta">' +
+            '<h3 class="book-title" data-act="edit">' + esc(s.title) + stTag + '<span class="pen">✎</span></h3>' +
+            '<div class="book-goal">目标 <b>' + s.targetWords + '</b> 字</div>' +
+            descHTML +
+          '</div>' +
+          (s.status !== 'done'
+            ? '<button class="check-btn" data-act="toggle-done" aria-label="标记完成"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></button>'
+            : '<div style="width:48px;height:48px;display:grid;place-items:center;font-size:22px">✅</div>') +
+        '</div>' +
+        '<div class="book-progress">' +
+          '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+          '<span class="pct">' + (s.currentWords || 0) + ' / ' + s.targetWords + '</span>' +
+        '</div>' +
+        '<div class="book-foot">' +
+          '<div class="stepper">' +
+            '<button data-act="minus" aria-label="减少">−</button>' +
+            '<input class="word-input" type="number" inputmode="numeric" value="' + (s.currentWords || '') + '" placeholder="0">' +
+            '<button data-act="plus" aria-label="增加">＋</button>' +
+          '</div>' +
+          '<div class="foot-right">' +
+            '<button class="edit-btn" data-act="edit"><span class="pen">✎</span>编辑</button>' +
+            '<button class="del-btn" data-act="delete">🗑</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+  function renderShort(){
+    const all = state.shortStories;
+    if (!all.length){
+      $('shortFilterBar').style.display = 'none';
+      $('shortList').innerHTML = '<div class="empty"><div class="empty-emoji">✍️</div><p>还没有短篇计划～<br>点下方按钮，开启你的第一个短篇吧！</p></div>';
+      return;
+    }
+    $('shortFilterBar').style.display = '';
+    const counts = { all: all.length, idea: 0, writing: 0, done: 0 };
+    all.forEach(s => { counts[s.status] = (counts[s.status]||0) + 1; });
+    const chips = [
+      { k:'all', label:'全部' },
+      { k:'idea', label:'💡 构思中' },
+      { k:'writing', label:'✍️ 写作中' },
+      { k:'done', label:'✅ 已完成' }
+    ];
+    $('shortFilterBar').innerHTML = chips.map(c =>
+      '<button class="filter-chip' + (currentShortFilter === c.k ? ' on' : '') + '" data-scat="' + c.k + '">' +
+      c.label + '<span class="cnt">' + (counts[c.k] || 0) + '</span></button>'
+    ).join('');
+
+    const filtered = currentShortFilter === 'all' ? all : all.filter(s => s.status === currentShortFilter);
+    if (!filtered.length){
+      $('shortList').innerHTML = '<div class="empty"><div class="empty-emoji">🔍</div><p>这个状态还没有短篇～</p></div>';
+      return;
+    }
+    $('shortList').innerHTML = filtered.map(shortCardHTML).join('');
+  }
+
+  /* ============ 渲染：日历 ============ */
+  function buildDoneMap(){
+    const map = {};
+    state.books.forEach(function(book){
+      if (!book.log) return;
+      Object.keys(book.log).forEach(function(date){
+        if (book.log[date] && book.log[date].done){
+          if (!map[date]) map[date] = [];
+          map[date].push({ title: book.title, emoji: book.emoji, color: book.color });
+        }
+      });
+    });
+    return map;
+  }
+
+  function renderCalendar(){
+    const y = calYear, m = calMonth;
+    const firstDay = new Date(y, m, 1);
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const startWeekday = firstDay.getDay();
+    const doneMap = buildDoneMap();
+    const todayStr = today();
+
+    let html = '';
+    html += '<div class="cal-head">';
+    html += '<button class="cal-nav" id="calPrev">‹</button>';
+    html += '<div class="cal-title">' + y + ' 年 ' + (m+1) + ' 月</div>';
+    html += '<button class="cal-nav" id="calNext">›</button>';
+    html += '</div>';
+    html += '<div class="cal-week">';
+    ['日','一','二','三','四','五','六'].forEach(d => html += '<div class="cal-wd">' + d + '</div>');
+    html += '</div>';
+    html += '<div class="cal-grid">';
+    for (let i = 0; i < startWeekday; i++) html += '<div class="cal-cell empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++){
+      const dateStr = y + '-' + pad(m+1) + '-' + pad(d);
+      const isToday = dateStr === todayStr;
+      const list = doneMap[dateStr] || [];
+      const has = list.length > 0;
+      const cls = 'cal-cell' + (isToday ? ' today' : '') + (has ? ' has-done' : '');
+      html += '<button class="' + cls + '" data-date="' + dateStr + '">';
+      html += '<span class="cal-day">' + d + '</span>';
+      if (has){
+        html += '<span class="cal-dots">';
+        list.slice(0, 3).forEach(item => html += '<i style="background:' + item.color + '"></i>');
+        html += '</span>';
+      }
+      html += '</button>';
+    }
+    const totalCells = startWeekday + daysInMonth;
+    const trailing = (7 - (totalCells % 7)) % 7;
+    for (let i = 0; i < trailing; i++) html += '<div class="cal-cell empty"></div>';
+    html += '</div>';
+
+    $('calendar').innerHTML = html;
+    renderDayDetail(selectedDate, doneMap);
+  }
+
+  function renderDayDetail(date, doneMap){
+    if (!doneMap) doneMap = buildDoneMap();
+    const list = doneMap[date] || [];
+    const d = new Date(date + 'T00:00:00');
+    const week = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+    const label = (d.getMonth()+1) + ' 月 ' + d.getDate() + ' 日 · ' + week;
+    let html = '<h3>📌 ' + label + '</h3>';
+    if (!list.length){
+      html += '<div class="day-empty">这一天还没有完成打卡<br>明天继续加油呀 🌱</div>';
+    } else {
+      html += '<div class="day-detail-list">';
+      list.forEach(item => {
+        html += '<div class="day-item"><span class="day-item-emoji">' + item.emoji + '</span><span>' + esc(item.title) + '</span></div>';
+      });
+      html += '</div>';
+    }
+    $('dayDetail').innerHTML = html;
+  }
+
+  /* ============ 渲染：统计 ============ */
+  function renderStats(){
+    const allBooks = state.books;
+    const activeBooks = allBooks.filter(b => !b.completed);
+    const completedBooks = allBooks.filter(b => b.completed);
+
+    let gDays = 0, gWords = 0, gStreak = 0;
+    allBooks.forEach(function(b){
+      gDays += bookDoneDays(b);
+      gWords += bookTotalWords(b);
+      gStreak = Math.max(gStreak, streakOf(b));
+    });
+
+    let html = '';
+    html += '<div class="stat-card total-card" style="--c:#B18CFF;--c-soft:#F0E8FF">' +
+              '<div class="stat-head"><span class="stat-emoji">🌈</span><h3>全部汇总</h3></div>' +
+              '<div class="stat-grid">' +
+                '<div class="stat-item"><b>' + activeBooks.length + '</b><span>在写书籍</span></div>' +
+                '<div class="stat-item"><b>' + gDays + '</b><span>累计打卡</span></div>' +
+                '<div class="stat-item"><b>' + fmtWords(gWords) + '</b><span>累计字数</span></div>' +
+              '</div>' +
+              '<div class="dot-label" style="text-align:center">最长连续 ' + gStreak + ' 天 🔥</div>' +
+            '</div>';
+
+    if (activeBooks.length){
+      html += '<div class="stat-card" style="--c:#FF7EB6;--c-soft:#FFEAF4">' +
+                '<div class="stat-head"><span class="stat-emoji">📚</span><h3>进行中的书 · 字数统计</h3></div>';
+      activeBooks.forEach(function(b){
+        const words = bookTotalWords(b);
+        const days = bookDoneDays(b);
+        const avg = days ? Math.round(words / days) : 0;
+        let best = 0;
+        const logs = b.log || {};
+        Object.keys(logs).forEach(k => { if (logs[k] && logs[k].words > best) best = logs[k].words; });
+        html += '<div style="background:#FBF9FE;border-radius:16px;padding:12px 14px;margin-bottom:8px">' +
+                  '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+                    '<span style="font-size:20px">' + b.emoji + '</span>' +
+                    '<b style="font-size:14px;font-weight:800">' + esc(b.title) + '</b>' +
+                    (b.category ? '<span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:7px;background:' + b.color + '22;color:' + b.color + '">' + esc(b.category) + '</span>' : '') +
+                  '</div>' +
+                  '<div class="stat-grid" style="margin:0">' +
+                    '<div class="stat-item"><b>' + fmtWords(words) + '</b><span>累计字数</span></div>' +
+                    '<div class="stat-item"><b>' + avg + '</b><span>日均字数</span></div>' +
+                    '<div class="stat-item"><b>' + fmtWords(best) + '</b><span>最佳单日</span></div>' +
+                  '</div>' +
+                '</div>';
+      });
+      html += '</div>';
+    }
+
+    /* 已完结 */
+    if (completedBooks.length){
+      html += '<div class="stat-card" style="--c:#2DA66A;--c-soft:#E6F7EE">' +
+                '<div class="stat-head"><span class="stat-emoji">📦</span><h3>已完成计划 · ' + completedBooks.length + ' 本</h3></div>';
+      completedBooks.forEach(function(b){
+        const words = bookTotalWords(b);
+        const days = bookDoneDays(b);
+        html += '<div style="background:#F5FBF7;border-radius:16px;padding:12px 14px;margin-bottom:8px;border:1px solid #D8F0E2">' +
+                  '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+                    '<span style="font-size:20px">' + b.emoji + '</span>' +
+                    '<b style="font-size:14px;font-weight:800">' + esc(b.title) + '</b>' +
+                    '<span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:7px;background:#E6F7EE;color:#2DA66A">✅ 已完结</span>' +
+                  '</div>' +
+                  '<div class="stat-grid" style="margin:0">' +
+                    '<div class="stat-item" style="background:#fff"><b style="color:#2DA66A">' + fmtWords(words) + '</b><span>累计字数</span></div>' +
+                    '<div class="stat-item" style="background:#fff"><b style="color:#2DA66A">' + days + '</b><span>打卡天数</span></div>' +
+                    '<div class="stat-item" style="background:#fff"><b style="color:#2DA66A">' + (b.completedAt ? b.completedAt.slice(5) : '—') + '</b><span>完结日期</span></div>' +
+                  '</div>' +
+                  '<div style="margin-top:8px;display:flex;justify-content:flex-end">' +
+                    '<button class="edit-btn" data-act="uncomplete" data-id="' + b.id + '" style="font-size:11px">↩ 恢复连载</button>' +
+                  '</div>' +
+                '</div>';
+      });
+      html += '</div>';
+    }
+
+    /* 每本书成就 */
+    if (allBooks.length){
+      html += allBooks.map(function(b){
+        const achs = getAchievements(b);
+        if (!achs.length) return '';
+        return '<div class="stat-card" style="--c:' + b.color + ';--c-soft:' + b.color + '22">' +
+                  '<div class="stat-head"><span class="stat-emoji">' + b.emoji + '</span><h3>' + esc(b.title) + ' · 成就</h3></div>' +
+                  '<div class="ach-list" style="border-top:none;padding-top:0;margin-top:0">' +
+                    achs.map(a => '<span class="ach-badge" title="' + a.desc + '">' + a.emoji + ' ' + a.name + '</span>').join('') +
+                  '</div>' +
+                '</div>';
+      }).join('');
+    }
+
+    if (!allBooks.length && !state.shortStories.length){
+      html = '<div class="empty"><div class="empty-emoji">📊</div><p>还没有数据哦～<br>先去码字吧！</p></div>';
+    }
+
+    $('viewStats').innerHTML = html;
+  }
+
+  /* ============ 全局渲染 ============ */
+  function renderAll(){
+    if (currentTab === 'today') renderSummary();
+    renderFilters();
+    renderBooks();
+    if (currentTab === 'short') renderShort();
+    if (currentTab === 'calendar') renderCalendar();
+    if (currentTab === 'stats') renderStats();
+  }
+
+  /* ============ 书籍事件 ============ */
+  $('bookList').addEventListener('click', function(e){
+    const delBtn = e.target.closest('.del-btn');
+    const compBtn = e.target.closest('[data-act="complete"]');
+    const card = e.target.closest('.book-card');
+
+    if (delBtn && card){
+      const book = getBook(card.dataset.id);
+      if (!book) return;
+      showConfirm({
+        emoji: '🗑',
+        title: '删除《' + book.title + '》？',
+        text: '这本书的打卡记录也会一起消失哦',
+        okText: '确定删除',
+        danger: true
+      }).then(function(ok){
+        if (!ok) return;
+        card.classList.add('removing');
+        vibrate(30);
+        setTimeout(function(){
+          state.books = state.books.filter(x => x.id !== book.id);
+          save();
+          renderAll();
+          toast('已删除，江湖再见 👋');
+        }, 360);
+      });
+      return;
+    }
+
+    if (compBtn && card){
+      const book = getBook(card.dataset.id);
+      if (!book) return;
+      showConfirm({
+        emoji: '📦',
+        title: '《' + book.title + '》完结了？',
+        text: '完结后会收进「统计」页面，可以随时恢复连载',
+        okText: '✅ 完结',
+        danger: false
+      }).then(function(ok){
+        if (!ok) return;
+        book.completed = true;
+        book.completedAt = today();
+        save();
+        card.classList.add('removing');
+        vibrate(30);
+        toast('🎉 恭喜完结！它被收进「统计」页面了');
+        setTimeout(function(){ renderAll(); }, 360);
+      });
+      return;
+    }
+
+    if (!card) return;
+    const book = getBook(card.dataset.id);
+    if (!book) return;
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const act = btn.dataset.act;
+    const log = getLog(book);
+
+    if (act === 'toggle'){
+      log.done = !log.done;
+      save();
+      if (log.done){
+        const rect = card.getBoundingClientRect();
+        burst(rect.left + rect.width/2, rect.top + 56, ['🎉','✨','💖','⭐','🌟','💫','🎊']);
+        $('mascot').classList.add('jump');
+        setTimeout(() => $('mascot').classList.remove('jump'), 650);
+        vibrate(28);
+        toast(pick(DONE_TOASTS));
+      } else {
+        toast('已取消打卡，明天再战 💪');
+      }
+      renderAll();
+      if (log.done){
+        const nc = $('bookList').querySelector('.book-card[data-id="' + book.id + '"]');
+        if (nc){ nc.classList.add('pop'); setTimeout(() => nc.classList.remove('pop'), 600); }
+      }
+      return;
+    }
+
+    if (act === 'plus' || act === 'minus'){
+      const step = Math.max(100, Math.round(book.goal * 0.1 / 100) * 100);
+      log.words = Math.max(0, (log.words || 0) + (act === 'plus' ? step : -step));
+      save();
+      const input = card.querySelector('.word-input');
+      if (input) input.value = log.words || '';
+      refreshCardProgress(card, book);
+      vibrate(8);
+      return;
+    }
+
+    if (act === 'edit'){ openSheet(book); return; }
+  });
+
+  $('bookList').addEventListener('input', function(e){
+    const input = e.target;
+    if (!input.classList || !input.classList.contains('word-input')) return;
+    const card = input.closest('.book-card');
+    if (!card) return;
+    const book = getBook(card.dataset.id);
+    if (!book) return;
+    let v = parseInt(input.value, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    if (v > 1000000) v = 1000000;
+    const log = getLog(book);
+    log.words = v;
+    save();
+    refreshCardProgress(card, book);
+  });
+
+  /* ============ 筛选栏点击 ============ */
+  $('filterBar').addEventListener('click', function(e){
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    currentFilter = chip.dataset.cat;
+    renderFilters();
+    renderBooks();
+    vibrate(8);
+  });
+  $('shortFilterBar').addEventListener('click', function(e){
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    currentShortFilter = chip.dataset.scat;
+    renderShort();
+    vibrate(8);
+  });
+
+  /* ============ 短篇事件 ============ */
+  $('shortList').addEventListener('click', function(e){
+    const card = e.target.closest('.book-card');
+    if (!card) return;
+    const s = getShort(card.dataset.id);
+    if (!s) return;
+
+    const delBtn = e.target.closest('.del-btn');
+    if (delBtn){
+      showConfirm({
+        emoji: '🗑',
+        title: '删除《' + s.title + '》？',
+        text: '删除后无法恢复哦',
+        okText: '确定删除',
+        danger: true
+      }).then(function(ok){
+        if (!ok) return;
+        card.classList.add('removing');
+        vibrate(30);
+        setTimeout(function(){
+          state.shortStories = state.shortStories.filter(x => x.id !== s.id);
+          save();
+          renderShort();
+          toast('已删除，江湖再见 👋');
+        }, 360);
+      });
+      return;
+    }
+
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const act = btn.dataset.act;
+
+    if (act === 'toggle-done'){
+      if (s.status !== 'done'){
+        showConfirm({
+          emoji: '✅',
+          title: '《' + s.title + '》完成了吗？',
+          text: '标记为已完成后，可以在「已完成」筛选里看到它',
+          okText: '✅ 已完成',
+          danger: false
+        }).then(function(ok){
+          if (!ok) return;
+          s.status = 'done';
+          s.completedAt = today();
+          if (!s.currentWords) s.currentWords = s.targetWords;
+          save();
+          card.classList.add('removing');
+          vibrate(30);
+          toast('🎉 短篇完成！你真棒');
+          setTimeout(function(){ renderShort(); }, 360);
+        });
+      }
+      return;
+    }
+
+    if (act === 'plus' || act === 'minus'){
+      const step = Math.max(100, Math.round((s.targetWords || 3000) * 0.05 / 100) * 100);
+      s.currentWords = Math.max(0, (s.currentWords || 0) + (act === 'plus' ? step : -step));
+      if (s.currentWords >= s.targetWords && s.status !== 'done') s.status = 'writing';
+      save();
+      renderShort();
+      vibrate(8);
+      return;
+    }
+
+    if (act === 'edit'){ openShortSheet(s); return; }
+  });
+
+  $('shortList').addEventListener('input', function(e){
+    const input = e.target;
+    if (!input.classList || !input.classList.contains('word-input')) return;
+    const card = input.closest('.book-card');
+    if (!card) return;
+    const s = getShort(card.dataset.id);
+    if (!s) return;
+    let v = parseInt(input.value, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    if (v > 10000000) v = 10000000;
+    s.currentWords = v;
+    save();
+    const pct = s.targetWords ? Math.min(100, Math.round(v / s.targetWords * 100)) : 0;
+    const fill = card.querySelector('.bar i');
+    if (fill) fill.style.width = pct + '%';
+    const pctEl = card.querySelector('.pct');
+    if (pctEl) pctEl.textContent = v + ' / ' + s.targetWords;
+  });
+
+  /* ============ 日历事件 ============ */
+  $('viewCalendar').addEventListener('click', function(e){
+    const nav = e.target.closest('.cal-nav');
+    if (nav){
+      if (nav.id === 'calPrev'){ calMonth--; if (calMonth < 0){ calMonth = 11; calYear--; } }
+      if (nav.id === 'calNext'){ calMonth++; if (calMonth > 11){ calMonth = 0; calYear++; } }
+      renderCalendar();
+      vibrate(8);
+      return;
+    }
+    const cell = e.target.closest('.cal-cell[data-date]');
+    if (cell){
+      selectedDate = cell.dataset.date;
+      const doneMap = buildDoneMap();
+      renderDayDetail(selectedDate, doneMap);
+      vibrate(6);
+    }
+  });
+
+  /* ============ 统计事件 ============ */
+  $('viewStats').addEventListener('click', function(e){
+    const btn = e.target.closest('[data-act="uncomplete"]');
+    if (!btn) return;
+    const book = getBook(btn.dataset.id);
+    if (!book) return;
+    showConfirm({
+      emoji: '↩',
+      title: '恢复《' + book.title + '》？',
+      text: '它会重新回到「今日」页面继续连载',
+      okText: '恢复',
+      danger: false
+    }).then(function(ok){
+      if (!ok) return;
+      book.completed = false;
+      book.completedAt = null;
+      save();
+      renderStats();
+      toast('已恢复连载 💪');
+    });
+  });
+
+  /* ============ 彩带 ============ */
+  function burst(x, y, emojis){
+    for (let i = 0; i < 15; i++){
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.textContent = emojis[i % emojis.length];
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 55 + Math.random() * 120;
+      el.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+      el.style.setProperty('--dy', (-Math.abs(Math.sin(ang)) * dist - 55).toFixed(1) + 'px');
+      el.style.setProperty('--rot', (Math.random() * 720 - 360).toFixed(0) + 'deg');
+      el.style.animationDelay = (Math.random() * 0.12).toFixed(2) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1500);
+    }
+  }
+
+  /* ============ Toast ============ */
+  let toastTimer = null;
+  function toast(msg){
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  /* ============ 灵感盒子 ============ */
+  $('inspireBtn').addEventListener('click', function(){
+    const box = $('inspireBox');
+    if (box.classList.contains('show')){
+      box.classList.remove('show');
+      return;
+    }
+    const p = pick(PROMPTS);
+    box.innerHTML = '<p>「 ' + esc(p) + ' 」</p><small>🎲 再点一次换个灵感</small>';
+    box.classList.add('show');
+    vibrate(12);
+  });
+  $('inspireBox').addEventListener('click', function(){
+    const p = pick(PROMPTS);
+    $('inspireBox').innerHTML = '<p>「 ' + esc(p) + ' 」</p><small>🎲 再点一次换个灵感</small>';
+    vibrate(10);
+  });
+
+  /* ============ 书籍编辑弹层 ============ */
+  function renderPickers(){
+    $('fEmoji').innerHTML = EMOJIS.map(e =>
+      '<button class="emoji-opt' + (e === tempEmoji ? ' sel' : '') + '" data-emoji="' + e + '">' + e + '</button>'
+    ).join('');
+    $('fColor').innerHTML = COLORS.map(c =>
+      '<button class="color-opt' + (c === tempColor ? ' sel' : '') + '" data-color="' + c + '" style="--cc:' + c + '"></button>'
+    ).join('');
+    const cats = getAllCategories();
+    $('quickCats').innerHTML = cats.map(c => '<button data-cat="' + esc(c) + '">' + esc(c) + '</button>').join('') +
+      (cats.length ? '' : '<span style="font-size:11.5px;color:#C6BBD2;font-weight:600">还没有分类，先写一个吧～</span>');
+  }
+  function syncQuickGoalSel(){
+    const v = String(parseInt($('fGoal').value, 10) || '');
+    $('quickGoals').querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.goal === v));
+  }
+  function openSheet(book){
+    editingId = book ? book.id : null;
+    tempEmoji = book ? book.emoji : pick(EMOJIS);
+    tempColor = book ? book.color : pick(COLORS);
+    $('sheetTitle').textContent = book ? '编辑这本书 ✎' : '添加新书 📚';
+    $('fTitle').value = book ? book.title : '';
+    $('fCategory').value = book ? (book.category || '') : '';
+    $('fGoal').value = book ? book.goal : 2000;
+    $('sheetDelete').style.display = book ? '' : 'none';
+    $('sheetSave').textContent = book ? '保存修改' : '开始码字！';
+    renderPickers();
+    syncQuickGoalSel();
+    $('sheetMask').classList.add('show');
+    $('sheet').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){
+      const el = $('fTitle'); el.focus();
+      if (book && el.select) el.select();
+    }, 360);
+  }
+  function closeSheet(){
+    $('sheetMask').classList.remove('show');
+    $('sheet').classList.remove('show');
+    document.body.style.overflow = '';
+    editingId = null;
+  }
+  $('fEmoji').addEventListener('click', function(e){
+    const btn = e.target.closest('.emoji-opt'); if (!btn) return;
+    tempEmoji = btn.dataset.emoji; renderPickers(); vibrate(6);
+  });
+  $('fColor').addEventListener('click', function(e){
+    const btn = e.target.closest('.color-opt'); if (!btn) return;
+    tempColor = btn.dataset.color; renderPickers(); vibrate(6);
+  });
+  $('quickGoals').addEventListener('click', function(e){
+    const btn = e.target.closest('button[data-goal]'); if (!btn) return;
+    $('fGoal').value = btn.dataset.goal; syncQuickGoalSel(); vibrate(6);
+  });
+  $('fGoal').addEventListener('input', syncQuickGoalSel);
+  $('quickCats').addEventListener('click', function(e){
+    const btn = e.target.closest('button[data-cat]'); if (!btn) return;
+    $('fCategory').value = btn.dataset.cat; vibrate(6);
+  });
+  $('sheetSave').addEventListener('click', function(){
+    const title = $('fTitle').value.trim() || '无名之书';
+    const category = $('fCategory').value.trim().slice(0, 10);
+    let goal = parseInt($('fGoal').value, 10);
+    if (isNaN(goal) || goal < 1) goal = 100;
+    if (goal > 1000000) goal = 1000000;
+    const wasEditing = !!editingId;
+    if (editingId){
+      const b = getBook(editingId);
+      if (b){
+        b.title = title; b.goal = goal; b.emoji = tempEmoji; b.color = tempColor;
+        if (category) b.category = category; else delete b.category;
+      }
+    } else {
+      const nb = { id: uid(), title, goal, emoji: tempEmoji, color: tempColor, createdAt: today(), completed: false, log: {} };
+      if (category) nb.category = category;
+      state.books.push(nb);
+    }
+    save(); closeSheet(); renderAll();
+    toast(wasEditing ? '已保存 ✨' : '新书已上架，开始码字吧 🎉');
+    vibrate(20);
+  });
+  $('sheetDelete').addEventListener('click', function(){
+    if (!editingId) return;
+    const b = getBook(editingId);
+    if (!b) return;
+    showConfirm({
+      emoji: '🗑', title: '删除《' + b.title + '》？',
+      text: '这本书的打卡记录也会一起消失哦',
+      okText: '确定删除', danger: true
+    }).then(function(ok){
+      if (!ok) return;
+      state.books = state.books.filter(x => x.id !== editingId);
+      save(); closeSheet(); renderAll();
+      toast('已删除，江湖再见 👋');
+    });
+  });
+  $('sheetMask').addEventListener('click', closeSheet);
+
+  /* ============ 短篇编辑弹层 ============ */
+  function renderShortPickers(){
+    $('sEmoji').innerHTML = S_EMOJIS.map(e =>
+      '<button class="emoji-opt' + (e === sTempEmoji ? ' sel' : '') + '" data-emoji="' + e + '">' + e + '</button>'
+    ).join('');
+    $('sColor').innerHTML = COLORS.map(c =>
+      '<button class="color-opt' + (c === sTempColor ? ' sel' : '') + '" data-color="' + c + '" style="--cc:' + c + '"></button>'
+    ).join('');
+    $('sStatusRow').querySelectorAll('.status-opt').forEach(b => b.classList.toggle('sel', b.dataset.st === tempStatus));
+  }
+  function syncShortTargetSel(){
+    const v = String(parseInt($('sTarget').value, 10) || '');
+    $('sQuickTargets').querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.t === v));
+  }
+  function openShortSheet(s){
+    editingShortId = s ? s.id : null;
+    sTempEmoji = s ? s.emoji : pick(S_EMOJIS);
+    sTempColor = s ? s.color : pick(COLORS);
+    tempStatus = s ? s.status : 'idea';
+    $('shortSheetTitle').textContent = s ? '编辑短篇 ✎' : '新的短篇计划 ✍️';
+    $('sTitle').value = s ? s.title : '';
+    $('sDesc').value = s ? (s.description || '') : '';
+    $('sTarget').value = s ? s.targetWords : 3000;
+    $('shortSheetDelete').style.display = s ? '' : 'none';
+    $('shortSheetSave').textContent = s ? '保存修改' : '创建计划';
+    renderShortPickers();
+    syncShortTargetSel();
+    $('shortSheetMask').classList.add('show');
+    $('shortSheet').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){
+      const el = $('sTitle'); el.focus();
+      if (s && el.select) el.select();
+    }, 360);
+  }
+  function closeShortSheet(){
+    $('shortSheetMask').classList.remove('show');
+    $('shortSheet').classList.remove('show');
+    document.body.style.overflow = '';
+    editingShortId = null;
+  }
+  $('sEmoji').addEventListener('click', function(e){
+    const btn = e.target.closest('.emoji-opt'); if (!btn) return;
+    sTempEmoji = btn.dataset.emoji; renderShortPickers(); vibrate(6);
+  });
+  $('sColor').addEventListener('click', function(e){
+    const btn = e.target.closest('.color-opt'); if (!btn) return;
+    sTempColor = btn.dataset.color; renderShortPickers(); vibrate(6);
+  });
+  $('sQuickTargets').addEventListener('click', function(e){
+    const btn = e.target.closest('button[data-t]'); if (!btn) return;
+    $('sTarget').value = btn.dataset.t; syncShortTargetSel(); vibrate(6);
+  });
+  $('sTarget').addEventListener('input', syncShortTargetSel);
+  $('sStatusRow').addEventListener('click', function(e){
+    const btn = e.target.closest('.status-opt'); if (!btn) return;
+    tempStatus = btn.dataset.st;
+    renderShortPickers();
+    vibrate(6);
+  });
+  $('shortSheetSave').addEventListener('click', function(){
+    const title = $('sTitle').value.trim() || '无名短篇';
+    const description = $('sDesc').value.trim().slice(0, 80);
+    let target = parseInt($('sTarget').value, 10);
+    if (isNaN(target) || target < 100) target = 3000;
+    if (target > 10000000) target = 10000000;
+    const wasEditing = !!editingShortId;
+    if (editingShortId){
+      const s = getShort(editingShortId);
+      if (s){
+        s.title = title; s.description = description; s.targetWords = target;
+        s.emoji = sTempEmoji; s.color = sTempColor; s.status = tempStatus;
+        if (tempStatus === 'done' && !s.completedAt) s.completedAt = today();
+        if (tempStatus !== 'done') s.completedAt = null;
+      }
+    } else {
+      state.shortStories.push({
+        id: uid(), title, description, targetWords: target, currentWords: 0,
+        status: tempStatus, emoji: sTempEmoji, color: sTempColor, createdAt: today()
+      });
+    }
+    save(); closeShortSheet(); renderShort();
+    toast(wasEditing ? '已保存 ✨' : '短篇计划已创建 🎉');
+    vibrate(20);
+  });
+  $('shortSheetDelete').addEventListener('click', function(){
+    if (!editingShortId) return;
+    const s = getShort(editingShortId);
+    if (!s) return;
+    showConfirm({
+      emoji: '🗑', title: '删除《' + s.title + '》？',
+      text: '删除后无法恢复哦',
+      okText: '确定删除', danger: true
+    }).then(function(ok){
+      if (!ok) return;
+      state.shortStories = state.shortStories.filter(x => x.id !== editingShortId);
+      save(); closeShortSheet(); renderShort();
+      toast('已删除，江湖再见 👋');
+    });
+  });
+  $('shortSheetMask').addEventListener('click', closeShortSheet);
+
+  /* ============ 标签栏 ============ */
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      currentTab = tab.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === tab));
+      $('viewToday').style.display    = currentTab === 'today'    ? '' : 'none';
+      $('viewShort').style.display    = currentTab === 'short'    ? '' : 'none';
+      $('viewCalendar').style.display = currentTab === 'calendar' ? '' : 'none';
+      $('viewStats').style.display    = currentTab === 'stats'    ? '' : 'none';
+      if (currentTab === 'stats') renderStats();
+      if (currentTab === 'calendar') renderCalendar();
+      if (currentTab === 'short') renderShort();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      vibrate(8);
+    });
+  });
+
+  /* ============ 添加按钮 ============ */
+  $('addBtn').addEventListener('click', function(){ openSheet(null); });
+  $('addShortBtn').addEventListener('click', function(){ openShortSheet(null); });
+
+  /* ============ 吉祥物 ============ */
+  $('mascot').addEventListener('click', function(){
+    const lines = [
+      '喵～今天也要加油哦！','我在这里陪你码字～','写不动的时候，写一句话也好呀',
+      '灵感马上就来啦 ✨','你是最棒的作者！','累了就休息一下下吧 ☕',
+      '每一个字都算数 🌟','摸我会涨灵感的哦～'
+    ];
+    const before = $('mascot').textContent;
+    $('mascot').textContent = pick(PETS);
+    toast(pick(lines));
+    $('mascot').classList.add('jump');
+    vibrate(12);
+    setTimeout(function(){
+      $('mascot').classList.remove('jump');
+      if ($('mascot').textContent !== before) renderSummary();
+    }, 700);
+  });
+
+  /* ============ 跨天检测 ============ */
+  setInterval(function(){
+    if (today() !== lastDay){
+      lastDay = today(); renderDate(); renderAll();
+      toast('新的一天开始啦，加油！🌅');
+    }
+  }, 60000);
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden && today() !== lastDay){
+      lastDay = today(); renderDate(); renderAll();
+    }
+  });
+
+  /* ============ 启动 ============ */
+  renderDate();
+  renderAll();
+
+})();
+</script>
+</body>
+</html>
